@@ -155,8 +155,8 @@ float AFPSGunBase::GetReloadTime()
 	return ReloadTime;
 }
 
-void AFPSGunBase::OnDropped_Implementation()
+void AFPSGunBase::OnInteract_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("It works, somehow"))
+	Super::OnInteract_Implementation();
+	UE_LOG(LogTemp, Error, TEXT("I'm the child!"))
 }
-

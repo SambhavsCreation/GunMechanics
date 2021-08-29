@@ -42,6 +42,9 @@ void AFPSCharacterBase::BeginPlay()
 	Gun = GetWorld()->SpawnActor<AFPSGunBase>(GunClass);
 	Gun->AttachToComponent(GetPlayerMeshComponent(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("Gun"));
 	Gun->SetOwner(this);
+
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AFPSCharacterBase::OnActorBeginOverlap);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AFPSCharacterBase::OnActorEndOverlap);
 	this->SetActorHiddenInGame(true);
 }
 
@@ -103,6 +106,7 @@ void AFPSCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AFPSCharacterBase::StopFire);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacterBase::Reload);
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFPSCharacterBase::DropWeapon);
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AFPSCharacterBase::InteractWithItem);
 }
 
 void AFPSCharacterBase::DropWeapon()
@@ -111,8 +115,38 @@ void AFPSCharacterBase::DropWeapon()
 	if (Gun->GetClass()->ImplementsInterface(UInteractInterface::StaticClass()))
 	{
 		IInteractInterface::Execute_OnDropped(Gun);
+		
 	}
 	
+}
+
+void AFPSCharacterBase::OnActorBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor->GetClass()->ImplementsInterface(UInteractInterface::StaticClass()))
+	{
+		IInteractInterface::Execute_OnEnterInteractionRadius(OtherActor);
+	}
+}
+
+void AFPSCharacterBase::OnActorEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor->GetClass()->ImplementsInterface(UInteractInterface::StaticClass()))
+	{
+		IInteractInterface::Execute_OnExitInteractionRadius(OtherActor);
+	}
+}
+
+void AFPSCharacterBase::InteractWithItem()
+{
+	TArray<AActor*> AllOverlappingActors;
+	GetCapsuleComponent()->GetOverlappingActors(AllOverlappingActors);
+	for (auto OverlappingActor : AllOverlappingActors)
+	{
+		if (OverlappingActor->GetClass()->ImplementsInterface(UInteractInterface::StaticClass()))
+		{
+			IInteractInterface::Execute_OnInteract(OverlappingActor);
+		}
+	}
 }
 
 void AFPSCharacterBase::StopAim()

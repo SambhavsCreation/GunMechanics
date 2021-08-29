@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "InteractInterface.h"
+#include "ItemBase.h"
 #include "GameFramework/Actor.h"
 #include "FPSGunBase.generated.h"
 
@@ -17,7 +18,7 @@ class USpringArmComponent;
 class USoundBase;
 
 UCLASS()
-class FPSMIGRATION1_API AFPSGunBase : public APawn, public IInteractInterface
+class FPSMIGRATION1_API AFPSGunBase : public AItemBase
 {
 	GENERATED_BODY()
 	
@@ -99,9 +100,10 @@ public:
 
 	UFUNCTION()
 		float GetReloadTime();
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "MyCategory")
-	void OnDropped();
-	virtual void OnDropped_Implementation() override;
+
+	void OnInteract();
+	virtual void OnInteract_Implementation() override;
+
 
 private:
 
