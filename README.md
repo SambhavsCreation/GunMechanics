@@ -1,3 +1,3 @@
 # FPSMigration1
 
-Developed with Unreal Engine 4
+A gameplay system in ue4 with advance gun mechanics written in C++
